@@ -184,38 +184,53 @@ function loadAttendanceList() {
 }
 
 // 11) 저장하기
-async function saveToGoogleSheet() {
+// 1) 임시 저장: 스프레드 시트에만 저장
+async function saveDraft() {
+  const payload = collectParams();
+  payload.mode = 'draft';
+  await postPayload(payload);
+  alert("임시 저장 완료되었습니다.");
+}
+
+// 2) 최종 저장: 스프레드 + Docs
+async function saveFinal() {
+  const payload = collectParams();
+  payload.mode = 'final';
+  await postPayload(payload);
+  alert("방송 기록이 Docs에 저장되었습니다.");
+}
+
+// 파라미터 수집 함수
+function collectParams() {
   const date  = document.getElementById('broadcastDate').value.trim();
   const title = document.getElementById('titleInput').value.trim();
-  const fields= ['topic','opening','main','story','closing'];
-  const payload={date, title};
+  const topic = document.querySelector('#topic textarea').value.trim();
+  const opening = document.querySelector('#opening textarea').value.trim();
+  const main    = document.querySelector('#main textarea').value.trim();
+  const story   = document.querySelector('#story textarea').value.trim();
+  const closing = document.querySelector('#closing textarea').value.trim();
+  const manual  = document.getElementById('playlistMemo').value.trim();
+  const auto    = Array.from(document.querySelectorAll('#playlistResult li'))
+                       .map(li => li.textContent.trim());
+  const attend = Array.from(document.querySelectorAll('#attendanceList li'))
+                       .map(li => li.textContent.trim());
 
-  fields.forEach(id=>{
-    const ta = document.querySelector(`#${id} textarea`);
-    payload[id] = ta? ta.value.trim() : "";
+  return {
+    date, title, topic, opening, main, story,
+    closing, manualPlaylist: manual,
+    autoPlaylist: auto,
+    attendanceList: attend
+  };
+}
+
+// 공통 POST 함수
+async function postPayload(payload) {
+  const res = await fetch(SCRIPT_DB_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
   });
-  payload.manualPlaylist = document.getElementById('playlistMemo').value.trim();
-
-  payload.autoPlaylist = Array.from(
-    document.querySelectorAll('#playlistResult li')
-  ).map(li=>li.textContent.trim());
-
-  payload.attendanceList= Array.from(
-    document.querySelectorAll('#attendanceList li')
-  ).map(li=>li.textContent.trim());
-
-  try {
-    const res = await fetch(SCRIPT_DB_URL, {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify(payload)
-    });
-    const txt= await res.text();
-    alert(txt);
-  } catch(e) {
-    console.error("저장 실패:", e);
-    alert("저장 중 오류 발생");
-  }
+  return res.json();
 }
 
 // 아코디언(섹션 열고 닫기) 기능 ------------------------------------------------
