@@ -73,6 +73,30 @@ function fillFields(data) {
   document.querySelectorAll("textarea").forEach(autoResize);
 }
 
+function fillFields(data) {
+// 1) 제목은 서버에 값이 있을 때만 덮어쓰기
+if (data.title && data.title.trim()) {
+    const ti = document.getElementById("titleInput");
+    ti.value = data.title;
+    updateEPInfo(data.title);
+  }
+
+  // 2) 나머지 항목은 기존과 동일하게 처리
+  const fields = {
+    topic:         "#topic textarea",
+    opening:       "#opening textarea",
+    main:          "#main textarea",
+    story:         "#story textarea",
+    closing:       "#closing textarea",
+    manualPlaylist:"#playlistMemo"
+  };
+  Object.entries(fields).forEach(([key, sel]) => {
+    const el = document.querySelector(sel);
+    if (el) el.value = data[key] || "";
+  });
+  document.querySelectorAll("textarea").forEach(autoResize);
+}
+
 // 6) EP 계산 (수·토 기준)
 function calculateEPNumber(dateStr) {
   const y = +dateStr.slice(0,4),
@@ -209,4 +233,17 @@ function toggleAll() {
   // 하나라도 열려 있지 않다면 모두 열고, 모두 열려 있으면 닫기
   const shouldOpen = ![...sections].every(sec => sec.classList.contains("open"));
   sections.forEach(sec => sec.classList.toggle("open", shouldOpen));
+}
+
+// ▶ 방송주제 입력값으로 제목 업데이트
+function updateBroadcastTitle() {
+  const topic = document.querySelector("#topic textarea").value.trim() || "[방송주제 입력]";
+  const date  = document.getElementById("broadcastDate").value.trim();
+  const epNum = calculateEPNumber(date);
+  const epText = `EP.${epNum} ♬♪ ${date}`;
+
+  const newTitle = `🎧 감성 라디오｜${topic} 사연+신청곡｜해피투나잇 ${epText}`;
+  const ti = document.getElementById("titleInput");
+  ti.value = newTitle;
+  updateEPInfo(newTitle);
 }
