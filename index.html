@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <title>앨리의 해피투나잇 : 라이브저장소</title>
+    <link
+      href="https://cdn.jsdelivr.net/gh/webfontworld/sCoreDream/sCoreDream.css"
+      rel="stylesheet"
+    />
+<style>
+    body {
+      background-color: #121212;
+      color: #e0e0e0;
+      font-family: 'Arial', sans-serif;
+      padding: 20px;
+    }
+    .main-title {
+      font-family: 'SCoreDream', sans-serif;
+      font-weight: 900;
+      font-size: 1.5em;
+      margin-bottom: 15px;
+      text-align: left;
+      color: #ffffff;
+    }
+    .ep-info {
+      font-size: 0.55em;
+      color: #ff8a80;
+      margin-left: 8px;
+      font-weight: 400;
+      vertical-align: middle;
+    }
+    .section-title {
+      font-family: 'SCoreDream', sans-serif;
+      font-weight: 900;
+      font-size: 1.2em;
+      cursor: pointer;
+      margin: 15px 0 5px;
+      padding: 8px 12px;
+      background-color: #1f1f1f;
+      border-left: 5px solid #ff8a80;
+      border-radius: 5px;
+      transition: background-color 0.3s;
+    }
+    .section-title:hover {
+      background-color: #2c2c2c;
+    }
+    .section-content {
+      max-height: 0;
+      overflow: hidden;
+      margin: 0 0 20px;
+      padding: 0 12px;
+      background-color: #1e1e1e;
+      border: 1px dashed #444;
+      border-radius: 5px;
+      transition: max-height 0.5s ease, padding 0.3s;
+    }
+    .section-content.open {
+      padding: 12px;
+      max-height: 1000px;
+    }
+    textarea {
+      width: 100%;
+      font-family: 'SCoreDream', sans-serif;
+      font-size: 1em;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #444;
+      background-color: #2a2a2a;
+      color: #fff;
+      resize: none;
+      overflow-y: auto;
+      box-shadow: 0 0 5px rgba(255, 138, 128, 0.3);
+      line-height: 24px;
+      max-height: 792px; /* 33 lines * 24px + 12px padding */
+    }
+    #toggle-all {
+      background: #444;
+      color: #eee;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9em;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+
+
+    #playlistResult {
+      max-height: none;
+      overflow-y: visible;
+      margin-top: 10px;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
+
+  </head>
+  <body>
+    <div class="main-title">
+      🎙️Happy Tonight<span class="ep-info" id="epDisplay"></span>
+    </div>
+
+    <div style="margin-bottom: 10px">
+      <label for="broadcastDate" style="font-weight: bold">📅 </label>
+      <input
+        type="text"
+        id="broadcastDate"
+        placeholder="예: 20250423"
+        style="
+          margin-left: 10px;
+          padding: 4px 8px;
+          border-radius: 5px;
+          border: 1px solid #888;
+          background-color: #1e1e1e;
+          color: #fff;
+        "
+      />
+      <button
+        onclick="handleDateChange()"
+        style="
+          margin-left: 10px;
+          padding: 4px 10px;
+          border-radius: 5px;
+          border: none;
+          background: #ff8a80;
+          color: #fff;
+          font-weight: bold;
+          cursor: pointer;
+        "
+      >불러오기</button
+      > <button id="toggle-all" onclick="toggleAll()">Open</button>
+    </div>
+
+
+
+    <div id="contentSections" class="hidden">
+      <!-- 방송제목 ~ 클로징까지의 textarea 영역들 -->
+    <div class="section-title" onclick="toggleSection('title')">🎙 방송제목</div>
+    <div id="title" class="section-content">
+      <textarea id="titleInput" oninput="saveTitleText()">🎧 감성 라디오｜[방송주제 입력] 사연+신청곡｜해피투나잇 EP.[회차] ♬♪ [방송날짜]</textarea>
+    </div>
+
+    <div class="section-title" onclick="toggleSection('topic')">💡 방송주제</div>
+    <div id="topic" class="section-content">
+      <textarea placeholder="오늘 방송의 주제를 입력하세요"
+                oninput="autoResize(this); saveContent('topic', this.value)"></textarea>
+    </div>
+
+    <div class="section-title" onclick="toggleSection('opening')">🌙 오프닝</div>
+    <div id="opening" class="section-content">
+      <textarea placeholder="오프닝 멘트를 입력하세요"
+                oninput="autoResize(this); saveContent('opening', this.value)"></textarea>
+    </div>
+
+    <div class="section-title" onclick="toggleSection('main')">🎧 메인</div>
+    <div id="main" class="section-content">
+      <textarea placeholder="메인 멘트를 입력하세요"
+                oninput="autoResize(this); saveContent('main', this.value)"></textarea>
+    </div>
+
+    <div class="section-title" onclick="toggleSection('story')">💌 사연</div>
+    <div id="story" class="section-content">
+      <textarea placeholder="청취자 사연을 입력하세요"
+                oninput="autoResize(this); saveContent('story', this.value)"></textarea>
+    </div>
+
+    <div class="section-title" onclick="toggleSection('closing')">🌟 클로징</div>
+    <div id="closing" class="section-content">
+      <textarea placeholder="클로징 멘트를 입력하세요"
+                oninput="autoResize(this); saveContent('closing', this.value)"></textarea>
+    </div>
+
+
+      <!-- 선곡리스트와 출석체크 영역 -->
+   <div class="section-title" onclick="toggleSection('playlist')">
+  🎶 선곡리스트
+ <button class="refresh-button" onclick="event.stopPropagation(); fetchPlaylistAuto();" style="margin-left:10px; padding:4px 10px; border-radius:5px; border:none; background:#ff8a80; color:#fff; font-weight:bold; cursor:pointer;">NEW</button></div>
+    <div id="playlist" class="section-content">
+      <label style="font-weight:bold; display:block; margin-bottom:6px;">✏️ 앨리 선곡</label>
+      <textarea
+        id="playlistMemo"
+        placeholder="세상에서 가장 행복한 데이트의 아름다운 선곡 🎶"
+        oninput="saveManualPlaylist()"
+        style="width:100%; height:150px; margin-bottom:15px;"></textarea>
+
+      <label style="font-weight:bold; display:block; margin-bottom:6px;">📡 신청곡 리스트</label>
+      <ul id="playlistResult">
+        <li>아이쿠 신청곡 미달 사태 😭</li>
+      </ul>
+    </div>
+
+<div class="section-title" onclick="toggleSection('attendance')">
+  🧍 출석체크
+    <button class="refresh-button" onclick="event.stopPropagation(); loadAttendanceList();" style="margin-left:10px; padding:4px 10px; border-radius:5px; border:none; background:#ff8a80; color:#fff; font-weight:bold; cursor:pointer;">NEW</button>
+</div>
+    <div id="attendance" class="section-content">
+      <ul id="attendanceList">
+        <li>아직은 출근 전이라 😭</li>
+      </ul>
+    </div>
+<div style="margin-top: 30px;">
+  <button onclick="copyMarkdown()" style="padding: 6px 12px; background-color: #ff8a80; border: none; color: white; font-weight: bold; border-radius: 6px; cursor: pointer;">
+    Copy
+  </button>
+
+<button onclick="saveToGoogleSheet()" style="padding: 6px 12px; background-color: #ff8a80; border: none; color: white; font-weight: bold; border-radius: 6px; cursor: pointer;">
+    Save
+  </button>
+
+  <pre id="markdownOutput" style="white-space: pre-wrap; background-color: #1e1e1e; color: #ccc; padding: 12px; border-radius: 8px; margin-top: 12px; border: 1px solid #444;"></pre>
+</div>
+
+    </div>
+
+    <script>
+  const BASE_EP = 118;
+  const BASE_DATE = new Date(2025, 4, 10); // 2025-05-10
+
+  function handleDateChange() {
+    const dateStr = document.getElementById("broadcastDate").value.trim();
+    if (dateStr.length !== 8 || isNaN(Number(dateStr))) {
+      alert("날짜는 8자리 숫자로 입력해 주세요 (예: 20250423)");
+      return;
+    }
+
+    const epNumber = calculateEPNumber(dateStr);
+    const epText = `EP.${epNumber} ♬♪ ${dateStr}`;
+    const defaultTitle = `🎧 감성 라디오｜[방송주제 입력] 사연+신청곡｜해피투나잇 ${epText}`;
+    const titleInput = document.getElementById("titleInput");
+
+    // 항상 기본 제목으로 세팅 (덮어쓰기)
+    titleInput.value = defaultTitle;
+    saveContent("title", defaultTitle);
+    updateEPInfo(defaultTitle);
+
+    document.getElementById("buttonRow")?.classList.remove("hidden");
+    document.getElementById("contentSections")?.classList.remove("hidden");
+
+    // ✅ 초기화
+    ['topic', 'opening', 'main', 'story', 'closing'].forEach(id => {
+      const textarea = document.querySelector(`#${id} textarea`);
+      if (textarea) textarea.value = "";
+    });
+    document.getElementById("playlistMemo").value = "";
+    document.getElementById("playlistResult").innerHTML = "<li>아이쿠 신청곡 미달 사태 😭</li>";
+    document.getElementById("attendanceList").innerHTML = "<li>아직은 출근 전이라 😭</li>";
+
+    loadContent();
+    loadManualPlaylist();
+    loadAttendanceList();
+    fetchPlaylistAuto();
+  }
+
+  function calculateEPNumber(dateStr) {
+    const target = new Date(
+      Number(dateStr.substring(0, 4)),
+      Number(dateStr.substring(4, 6)) - 1,
+      Number(dateStr.substring(6, 8))
+    );
+    const diffDays = Math.floor((target - BASE_DATE) / (1000 * 60 * 60 * 24));
+    let count = 0;
+    for (let i = 0; i <= diffDays; i++) {
+      const d = new Date(BASE_DATE.getTime() + i * 86400000);
+      if (d.getDay() === 3 || d.getDay() === 6) count++;
+    }
+    return BASE_EP + count - 1;
+  }
+
+  function getDateKey(key) {
+    const date = document.getElementById("broadcastDate").value.trim() || "DEFAULT";
+    return `script_${key}_${date}`;
+  }
+
+  function saveContent(key, value) {
+    localStorage.setItem(getDateKey(key), value);
+  }
+
+  function loadContent() {
+  const fields = ['title', 'topic', 'opening', 'main', 'story', 'closing'];
+  fields.forEach(id => {
+    const textarea = document.querySelector(`#${id} textarea`);
+    if (!textarea) return;
+
+    const content = localStorage.getItem(getDateKey(id));
+    if (content && content.trim() !== "") {
+      textarea.value = content;
+      autoResize(textarea);
+      if (id === 'title') updateEPInfo(content);
+    } else {
+      textarea.value = ""; // 이전 값 지움
+      autoResize(textarea); // 크기 초기화
+    }
+  });
+}
+
+
+  function saveManualPlaylist() {
+    const val = document.getElementById("playlistMemo").value;
+    localStorage.setItem(getDateKey("manualPlaylist"), val);
+  }
+
+  function loadManualPlaylist() {
+    const val = localStorage.getItem(getDateKey("manualPlaylist"));
+    if (val) {
+      document.getElementById("playlistMemo").value = val;
+    }
+  }
+
+  function toggleSection(id) {
+    const section = document.getElementById(id);
+    section.classList.toggle("open");
+  }
+
+  function toggleAll() {
+    const sections = document.querySelectorAll(".section-content");
+    const shouldOpen = ![...sections].every(sec => sec.classList.contains("open"));
+    sections.forEach(sec => sec.classList.toggle("open", shouldOpen));
+  }
+
+  function autoResize(textarea) {
+    textarea.style.height = 'auto';
+    const lineCount = textarea.value.split('\n').length;
+    if (lineCount <= 33) {
+      textarea.style.overflowY = 'hidden';
+      textarea.style.height = textarea.scrollHeight + 'px';
+    } else {
+      textarea.style.overflowY = 'auto';
+      const lineHeight = 24;
+      const maxHeight = lineHeight * 33 + 12;
+      textarea.style.height = `${maxHeight}px`;
+    }
+  }
+
+  function updateEPInfo(titleText) {
+    const match = titleText.match(/EP\.\d{1,4}\s[♬♪]+\s\d{8}/);
+    const display = document.getElementById("epDisplay");
+    display.textContent = match ? ` - ${match[0]}` : '';
+  }
+
+ async function fetchPlaylistAuto() {
+  const date = document.getElementById("broadcastDate").value.trim();
+  const list = document.getElementById("playlistResult");
+
+  // ✅ 불러오는 중 문구를 먼저 보여줌
+  list.innerHTML = "<li>신청곡 불러오는 중...</li>";
+    if (!date) {
+      console.warn("⛔ 방송 날짜가 입력되지 않았습니다.");
+      return;
+    }
+
+    const url = `https://script.google.com/macros/s/AKfycbzDz0Af1Kzio7X_Adqq4pkgkmlutLkCUN6Qo4tlTwGG-J3VvyxO-O0L0L_j4Oqh2gObxg/exec?type=requestlist&D=${date}`;
+
+    try {
+      const response = await fetch(url);
+      const data = await response.json();
+         // ✅ 받은 데이터가 비었을 경우
+    if (!data || data.length === 0) {
+      list.innerHTML = "<li>아이쿠 신청곡 미달 사태 😢</li>";
+      return;
+    }
+
+    // ✅ 정상 데이터 표시
+    list.innerHTML = "";
+    data.forEach(song => {
+      const li = document.createElement("li");
+      li.textContent = song;
+      list.appendChild(li);
+    });
+
+  } catch (error) {
+    console.error("🎵 신청곡 자동 불러오기 실패:", error);
+    list.innerHTML = "<li>신청곡 불러오기 중 오류 발생 😢</li>";
+  }
+}
+
+  function loadAttendanceList() {
+    const titleText = localStorage.getItem(getDateKey("title")) || "";
+    const dateMatch = titleText.match(/\d{8}$/);
+    if (!dateMatch) return;
+    const date = dateMatch[0];
+    const ul = document.getElementById("attendanceList");
+    ul.innerHTML = '<li>출석자 불러오는 중...</li>';
+
+    const url = `https://script.google.com/macros/s/AKfycbxXWYEgCyeAz1c_JFQGVbn7AASCNU3gZQ5janozphQVD31AE3Wylip2DmWP89Fny0Lxyg/exec?L=${date}&type=list`;
+
+    fetch(url)
+      .then(res => res.json())
+      .then(data => {
+        ul.innerHTML = '';
+        if (data.length === 0) {
+          ul.innerHTML = '<li>아직은 출근 전이라 😭</li>';
+        } else {
+          data.forEach(id => {
+            const li = document.createElement('li');
+            li.textContent = id;
+            ul.appendChild(li);
+          });
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        ul.innerHTML = '<li>출석자 불러오기 중 오류 발생 😢</li>';
+      });
+  }
+
+  async function saveToGoogleSheet() {
+  const date = document.getElementById('broadcastDate').value.trim();
+  const title = document.getElementById('titleInput').value.trim();
+  const fields = ['topic', 'opening', 'main', 'story', 'closing'];
+  const data = { date, title };
+
+  fields.forEach(id => {
+    const textarea = document.querySelector(`#${id} textarea`);
+    data[id] = textarea ? textarea.value.trim() : '';
+  });
+
+  data.manualPlaylist = document.getElementById('playlistMemo')?.value.trim() || '';
+
+  const autoSongs = [];
+  document.querySelectorAll('#playlistResult li').forEach(li => {
+    const song = li.textContent.trim();
+    if (
+      song &&
+      song !== '불러오는 중...' &&
+      song !== '아이쿠 신청곡 미달 사태 😢' &&
+      song !== '신청곡 불러오기 중 오류 발생 😢'
+    ) {
+      autoSongs.push(song);
+    }
+  });
+  data.autoPlaylist = autoSongs;
+
+  const attendees = [];
+  document.querySelectorAll('#attendanceList li').forEach(li => {
+    const id = li.textContent.trim();
+    if (
+      id &&
+      id !== '출석자 불러오는 중...' &&
+      id !== '아직은 출근 전이라 😭' &&
+      id !== '출석자가 없습니다.' &&
+      id !== '출석자 불러오기 중 오류 발생 😢'
+    ) {
+      attendees.push(id);
+    }
+  });
+  data.attendanceList = attendees;
+
+  try {
+    const response = await fetch('https://script.google.com/macros/s/AKfycbyucinTFRZ04xlVTfjeBKQ6t931j_BTFZfBQ-ehwf3NBWo3M6C4xd3-q_zt2lvFkufAlg/exec', {
+      method: 'POST',
+      body: JSON.stringify(data),
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    const text = await response.text();
+    alert(text);
+  } catch (error) {
+    console.error(error);
+    alert('❌ 시트 저장 실패: ' + error.message);
+  }
+}
+
+
+  window.onload = () => {
+    document.getElementById("broadcastDate").value = "20250423"; // 예시 날짜
+    handleDateChange();
+
+
+    setInterval(fetchPlaylistAuto, 20 * 60 * 1000); // 20분마다 신청곡 갱신
+  };
+
+window.copyMarkdown = function () {
+  const date = document.getElementById('broadcastDate').value.trim();
+  const title = document.getElementById('titleInput').value.trim();
+  const fields = ['topic', 'opening', 'main', 'story', 'closing'];
+  const data = { date, title };
+
+  fields.forEach(id => {
+    const textarea = document.querySelector(`#${id} textarea`);
+    data[id] = textarea ? textarea.value.trim() : '';
+  });
+
+  data.manualPlaylist = document.getElementById('playlistMemo')?.value.trim() || '';
+
+  const autoSongs = [];
+  document.querySelectorAll('#playlistResult li').forEach(li => {
+    const song = li.textContent.trim();
+    if (song && !song.includes('불러오는 중')) {
+      autoSongs.push(song);
+    }
+  });
+
+  const attendees = [];
+  document.querySelectorAll('#attendanceList li').forEach(li => {
+    const id = li.textContent.trim();
+    if (id && !id.includes('불러오는 중')) {
+      attendees.push(id);
+    }
+  });
+
+  const markdown = `🎙해피투나잇 방송 기록 - ${formatDate(date)}
+
+📌 방송 제목  
+${title}
+
+💡 방송 주제 
+${data.topic || '-'}
+
+🌙 오프닝 멘트 
+${data.opening || '-'}
+
+
+🎧 메인 멘트 
+${data.main || '-'}
+
+
+💌 사연 소개 
+${data.story || '-'}
+
+
+🌟 클로징 멘트  
+${data.closing || '-'}
+
+
+🎶 앨리 선곡  
+${data.manualPlaylist ? '- ' + data.manualPlaylist.split('\n').join('\n- ') : '-'}
+
+📡 신청곡 리스트 
+${autoSongs.length ? autoSongs.map(s => '- ' + s).join('\n') : '-'}
+
+🧍 출석체크
+${attendees.length ? attendees.map(s => '- ' + s).join('\n') : '-'}`.trim();
+
+  document.getElementById('markdownOutput').textContent = markdown;
+
+  navigator.clipboard.writeText(markdown).then(() => {
+    alert('✅ 복사되었습니다! 네이버 카페에 붙여넣기 하세요.');
+  }).catch(err => {
+    alert('❌ 복사 실패: ' + err);
+  });
+};
+
+function formatDate(yyyymmdd) {
+  if (!yyyymmdd || yyyymmdd.length !== 8) return yyyymmdd;
+  return `${yyyymmdd.substring(0,4)}.${yyyymmdd.substring(4,6)}.${yyyymmdd.substring(6)}`;
+}
+
+</script>
+
+  </body>
+</html>
