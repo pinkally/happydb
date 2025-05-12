@@ -193,3 +193,20 @@ async function saveToGoogleSheet() {
     alert("저장 중 오류 발생");
   }
 }
+
+// 아코디언(섹션 열고 닫기) 기능 ------------------------------------------------
+// 단일 섹션 토글
+function toggleSection(id) {
+  const section = document.getElementById(id);
+  if (section) {
+    section.classList.toggle("open");
+  }
+}
+
+// 전체 섹션 열기/닫기
+function toggleAll() {
+  const sections = document.querySelectorAll(".section-content");
+  // 하나라도 열려 있지 않다면 모두 열고, 모두 열려 있으면 닫기
+  const shouldOpen = ![...sections].every(sec => sec.classList.contains("open"));
+  sections.forEach(sec => sec.classList.toggle("open", shouldOpen));
+}
