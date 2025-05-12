@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <title>앨리의 해피투나잇 : 라이브저장소</title>
+    <link href="https://cdn.jsdelivr.net/gh/webfontworld/sCoreDream/sCoreDream.css" rel="stylesheet" />
+    <style>
+      body {
+        background-color: #121212;
+        color: #e0e0e0;
+        font-family: 'Arial', sans-serif;
+        padding: 20px;
+      }
+      .main-title {
+        font-family: 'SCoreDream', sans-serif;
+        font-weight: 900;
+        font-size: 1.5em;
+        margin-bottom: 15px;
+        text-align: left;
+        color: #ffffff;
+      }
+      .ep-info {
+        font-size: 0.55em;
+        color: #ff8a80;
+        margin-left: 8px;
+        font-weight: 400;
+        vertical-align: middle;
+      }
+      .section-title {
+        font-family: 'SCoreDream', sans-serif;
+        font-weight: 900;
+        font-size: 1.2em;
+        cursor: pointer;
+        margin: 15px 0 5px;
+        padding: 8px 12px;
+        background-color: #1f1f1f;
+        border-left: 5px solid #ff8a80;
+        border-radius: 5px;
+        transition: background-color 0.3s;
+      }
+      .section-title:hover {
+        background-color: #2c2c2c;
+      }
+      .section-content {
+        max-height: 0;
+        overflow: hidden;
+        margin: 0 0 20px;
+        padding: 0 12px;
+        background-color: #1e1e1e;
+        border: 1px dashed #444;
+        border-radius: 5px;
+        transition: max-height 0.5s ease, padding 0.3s;
+      }
+      .section-content.open {
+        padding: 12px;
+        max-height: 1000px;
+      }
+      textarea {
+        width: 100%;
+        font-family: 'SCoreDream', sans-serif;
+        font-size: 1em;
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid #444;
+        background-color: #2a2a2a;
+        color: #fff;
+        resize: none;
+        overflow-y: auto;
+        box-shadow: 0 0 5px rgba(255, 138, 128, 0.3);
+        line-height: 24px;
+        max-height: 792px;
+      }
+      #toggle-all {
+        background: #444;
+        color: #eee;
+        border: none;
+        padding: 6px 10px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.9em;
+        font-weight: bold;
+        margin-bottom: 20px;
+      }
+      #playlistResult {
+        max-height: none;
+        overflow-y: visible;
+        margin-top: 10px;
+      }
+      .hidden {
+        display: none;
+      }
+      .refresh-button {
+        margin-left: 10px;
+        padding: 4px 10px;
+        border-radius: 5px;
+        border: none;
+        background: #ff8a80;
+        color: #fff;
+        font-weight: bold;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="main-title">
+      🎙️Happy Tonight<span class="ep-info" id="epDisplay"></span>
+    </div>
+
+    <div style="margin-bottom: 10px">
+      <label for="broadcastDate" style="font-weight: bold">📅 </label>
+      <input type="text" id="broadcastDate" placeholder="예: 20250423" style="margin-left: 10px; padding: 4px 8px; border-radius: 5px; border: 1px solid #888; background-color: #1e1e1e; color: #fff;" />
+      <button onclick="handleDateChange()" style="margin-left: 10px; padding: 4px 10px; border-radius: 5px; border: none; background: #ff8a80; color: #fff; font-weight: bold; cursor: pointer;">불러오기</button>
+      <button id="toggle-all" onclick="toggleAll()">Open</button>
+    </div>
+
+    <div id="contentSections" class="hidden">
+      <!-- 방송제목 ~ 클로징까지의 textarea 영역들 -->
+      <div class="section-title" onclick="toggleSection('title')">🎙 방송제목</div>
+      <div id="title" class="section-content">
+        <textarea id="titleInput" oninput="saveContent('title', this.value)">🎧 감성 라디오｜[방송주제 입력] 사연+신청곡｜해피투나잇 EP.[회차] ♬♪ [방송날짜]</textarea>
+      </div>
+
+      <div class="section-title" onclick="toggleSection('topic')">💡 방송주제</div>
+      <div id="topic" class="section-content">
+        <textarea placeholder="오늘 방송의 주제를 입력하세요" oninput="autoResize(this); saveContent('topic', this.value)"></textarea>
+      </div>
+
+      <div class="section-title" onclick="toggleSection('opening')">🌙 오프닝</div>
+      <div id="opening" class="section-content">
+        <textarea placeholder="오프닝 멘트를 입력하세요" oninput="autoResize(this); saveContent('opening', this.value)"></textarea>
+      </div>
+
+      <div class="section-title" onclick="toggleSection('main')">🎧 메인</div>
+      <div id="main" class="section-content">
+        <textarea placeholder="메인 멘트를 입력하세요" oninput="autoResize(this); saveContent('main', this.value)"></textarea>
+      </div>
+
+      <div class="section-title" onclick="toggleSection('story')">💌 사연</div>
+      <div id="story" class="section-content">
+        <textarea placeholder="청취자 사연을 입력하세요" oninput="autoResize(this); saveContent('story', this.value)"></textarea>
+      </div>
+
+      <div class="section-title" onclick="toggleSection('closing')">🌟 클로징</div>
+      <div id="closing" class="section-content">
+        <textarea placeholder="클로징 멘트를 입력하세요" oninput="autoResize(this); saveContent('closing', this.value)"></textarea>
+      </div>
+
+      <!-- 선곡리스트 -->
+      <div class="section-title" onclick="toggleSection('playlist')">
+        🎶 선곡리스트
+        <button class="refresh-button" onclick="event.stopPropagation(); fetchPlaylistAuto();">NEW</button>
+      </div>
+      <div id="playlist" class="section-content">
+        <label style="font-weight:bold; display:block; margin-bottom:6px;">✏️ 앨리 선곡</label>
+        <textarea id="playlistMemo" placeholder="세상에서 가장 행복한 데이트의 아름다운 선곡 🎶" oninput="saveManualPlaylist()" style="width:100%; height:150px; margin-bottom:15px;"></textarea>
+        <label style="font-weight:bold; display:block; margin-bottom:6px;">📡 신청곡 리스트</label>
+        <ul id="playlistResult">
+          <li>아이쿠 신청곡 미달 사태 😭</li>
+        </ul>
+      </div>
+
+      <!-- 출석체크 -->
+      <div class="section-title" onclick="toggleSection('attendance')">
+        🧍 출석체크
+        <button class="refresh-button" onclick="event.stopPropagation(); loadAttendanceList();">NEW</button>
+      </div>
+      <div id="attendance" class="section-content">
+        <ul id="attendanceList">
+          <li>아직은 출근 전이라 😭</li>
+        </ul>
+      </div>
+
+      <!-- 저장 버튼 -->
+      <div style="margin-top: 30px;">
+        <button onclick="saveToGoogleSheet()" style="padding: 6px 12px; background-color: #ff8a80; border: none; color: white; font-weight: bold; border-radius: 6px; cursor: pointer;">
+          Save
+        </button>
+      </div>
+    </div>
+
+<script src="script.js"></script> 
+
+  </body>
+</html>
