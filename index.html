@@ -122,7 +122,10 @@
 
       <div class="section-title" onclick="toggleSection('topic')">💡 방송주제</div>
       <div id="topic" class="section-content">
-        <textarea placeholder="오늘 방송의 주제를 입력하세요" oninput="autoResize(this); saveContent('topic', this.value)"></textarea>
+        <textarea
+  placeholder="오늘 방송의 주제를 입력하세요"
+  oninput="autoResize(this); updateBroadcastTitle();"
+></textarea>
       </div>
 
       <div class="section-title" onclick="toggleSection('opening')">🌙 오프닝</div>
