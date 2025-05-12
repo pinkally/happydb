@@ -109,7 +109,7 @@
     <div style="margin-bottom: 10px">
       <label for="broadcastDate" style="font-weight: bold">📅 </label>
       <input type="text" id="broadcastDate" placeholder="예: 20250423" style="margin-left: 10px; padding: 4px 8px; border-radius: 5px; border: 1px solid #888; background-color: #1e1e1e; color: #fff;" />
-      <button onclick="handleDateChange()" style="margin-left: 10px; padding: 4px 10px; border-radius: 5px; border: none; background: #ff8a80; color: #fff; font-weight: bold; cursor: pointer;">불러오기</button>
+      <button onclick="handleDateChange()">불러오기</button>
       <button id="toggle-all" onclick="toggleAll()">Open</button>
     </div>
 
@@ -117,35 +117,33 @@
       <!-- 방송제목 ~ 클로징까지의 textarea 영역들 -->
       <div class="section-title" onclick="toggleSection('title')">🎙 방송제목</div>
       <div id="title" class="section-content">
-        <textarea id="titleInput" oninput="saveContent('title', this.value)">🎧 감성 라디오｜[방송주제 입력] 사연+신청곡｜해피투나잇 EP.[회차] ♬♪ [방송날짜]</textarea>
+        <textarea id="titleInput" oninput="autoResize(this)">🎧 감성 라디오｜[방송주제 입력] 사연+신청곡｜해피투나잇 EP.[회차] ♬♪ [방송날짜]</textarea>
       </div>
 
       <div class="section-title" onclick="toggleSection('topic')">💡 방송주제</div>
       <div id="topic" class="section-content">
         <textarea
-  placeholder="오늘 방송의 주제를 입력하세요"
-  oninput="autoResize(this); updateBroadcastTitle();"
-></textarea>
+  placeholder="오늘 방송의 주제를 입력하세요" oninput="autoResize(this); updateBroadcastTitle()"></textarea>
       </div>
 
       <div class="section-title" onclick="toggleSection('opening')">🌙 오프닝</div>
       <div id="opening" class="section-content">
-        <textarea placeholder="오프닝 멘트를 입력하세요" oninput="autoResize(this); saveContent('opening', this.value)"></textarea>
+        <textarea placeholder="오프닝 멘트를 입력하세요" oninput="autoResize(this)"></textarea>
       </div>
 
       <div class="section-title" onclick="toggleSection('main')">🎧 메인</div>
       <div id="main" class="section-content">
-        <textarea placeholder="메인 멘트를 입력하세요" oninput="autoResize(this); saveContent('main', this.value)"></textarea>
+        <textarea placeholder="메인 멘트를 입력하세요" oninput="autoResize(this)"></textarea>
       </div>
 
       <div class="section-title" onclick="toggleSection('story')">💌 사연</div>
       <div id="story" class="section-content">
-        <textarea placeholder="청취자 사연을 입력하세요" oninput="autoResize(this); saveContent('story', this.value)"></textarea>
+        <textarea placeholder="청취자 사연을 입력하세요" oninput="autoResize(this)"></textarea>
       </div>
 
       <div class="section-title" onclick="toggleSection('closing')">🌟 클로징</div>
       <div id="closing" class="section-content">
-        <textarea placeholder="클로징 멘트를 입력하세요" oninput="autoResize(this); saveContent('closing', this.value)"></textarea>
+        <textarea placeholder="클로징 멘트를 입력하세요" oninput="autoResize(this)"></textarea>
       </div>
 
       <!-- 선곡리스트 -->
@@ -155,7 +153,7 @@
       </div>
       <div id="playlist" class="section-content">
         <label style="font-weight:bold; display:block; margin-bottom:6px;">✏️ 앨리 선곡</label>
-        <textarea id="playlistMemo" placeholder="세상에서 가장 행복한 데이트의 아름다운 선곡 🎶" oninput="saveManualPlaylist()" style="width:100%; height:150px; margin-bottom:15px;"></textarea>
+        <textarea id="playlistMemo" placeholder="세상에서 가장 행복한 데이트의 아름다운 선곡 🎶" style="width:100%; height:150px; margin-bottom:15px;"></textarea>
         <label style="font-weight:bold; display:block; margin-bottom:6px;">📡 신청곡 리스트</label>
         <ul id="playlistResult">
           <li>아이쿠 신청곡 미달 사태 😭</li>
@@ -175,9 +173,7 @@
 
       <!-- 저장 버튼 -->
       <div style="margin-top: 30px;">
-        <button onclick="saveToGoogleSheet()" style="padding: 6px 12px; background-color: #ff8a80; border: none; color: white; font-weight: bold; border-radius: 6px; cursor: pointer;">
-          Save
-        </button>
+        <button onclick="saveToGoogleSheet()">Save</button>
       </div>
     </div>
 
