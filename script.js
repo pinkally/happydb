@@ -10,11 +10,22 @@ const ATTENDANCE_URL = 'https://script.google.com/macros/s/AKfycbxXWYEgCyeAz1c_J
 // 2) 로드 시 오늘 날짜 세팅 & 불러오기
 window.onload = () => {
   const now = new Date();
-  const y = now.getFullYear(), m = now.getMonth()+1, d = now.getDate();
-  document.getElementById("broadcastDate").value =
-    `${y}${m.toString().padStart(2,'0')}${d.toString().padStart(2,'0')}`;
+  // (생략) 날짜 세팅, handleDateChange 호출 등…
+  document.getElementById("broadcastDate").value = /*…*/;
   handleDateChange();
-};
+
+  // ───────────────────────────────────────────────────────────────────────────
+  // ▶ 여기서부터 auto-save draft용 이벤트 리스너 등록
+  document.querySelectorAll("textarea").forEach(ta => {
+    let timer;
+    ta.addEventListener("input", () => {
+      clearTimeout(timer);
+      timer = setTimeout(saveDraft, 1000);
+    });
+  });
+  // ───────────────────────────────────────────────────────────────────────────
+
+}; // ← window.onload 끝
 
 // 3) 날짜 변경 핸들러
 async function handleDateChange() {
